@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/style.css">
     <title>Информация о репозитории</title>
+    <style>
+        .hidden-form {
+            display: none; /* Полностью скрывает элемент */
+        }
+    </style>
 </head>
 <body>
     <h1>Информация о репозитории</h1>
@@ -23,7 +28,6 @@
         <input type="text" name="commit_message" id="commit_message" required>
         <button type="submit">Искать</button>
     </form>
-    
 
     {% if commits %}
         <h3>Результаты поиска:</h3>
@@ -37,28 +41,33 @@
         </ul>
     {% endif %}
 
-    <form id="repo-form" method="POST" action="/commit-stats">
-        <label for="repo_owner">Имя пользователя:</label>
-        <input type="text" id="repo_owner" name="repo_owner" required><br>
-
-        <label for="repo_name">Название репозитория:</label>
-        <input type="text" id="repo_name" name="repo_name" required><br>
-
-        <button type="submit">Получить статистику</button>
-    </form>
+    <h2>Получить статистику по коммитам</h2>
+    <div class="hidden-form">
+        <form id="repo-form" method="POST" action="/commit-stats">
+            <input type="text" id="repo_owner" name="repo_owner" required>
+            <input type="text" id="repo_name" name="repo_name" required>
+        </form>
+    </div>
+    <button id="get-stats-btn">Получить статистику</button>
 
     <script>
-        document.getElementById('repo-form').addEventListener('submit', function(event) {
-            event.preventDefault();
+        // Извлекаем имя владельца и название репозитория из переданных данных в шаблоне
+        const repoUrl = "{{ data.html_url }}";  // Получаем URL репозитория
+        const urlParts = repoUrl.split('/');     // Разбиваем URL по слэшам
 
-            const repoOwner = document.getElementById('repo_owner').value;
-            const repoName = document.getElementById('repo_name').value;
+        const repoOwner = urlParts[urlParts.length - 2];  // Имя пользователя (предпоследний элемент)
+        const repoName = urlParts[urlParts.length - 1];   // Название репозитория (последний элемент)
 
-            window.location.href = `/commit-stats?repo_owner=${repoOwner}&repo_name=${repoName}`;
+        // Заполняем скрытые поля формы
+        document.getElementById('repo_owner').value = repoOwner;
+        document.getElementById('repo_name').value = repoName;
+
+        // Обработчик нажатия на кнопку
+        document.getElementById('get-stats-btn').addEventListener('click', function() {
+            document.getElementById('repo-form').submit(); // Отправка формы
         });
     </script>
+
     <a href="/">Назад</a>
 </body>
 </html>
-
-

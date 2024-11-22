@@ -1,4 +1,3 @@
-<!-- commit_stats.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Статистика коммитов</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <h1>График зависимости коммитов от времени для репозитория {{ repo_name }}</h1>
@@ -14,9 +14,10 @@
 
     <script>
         const commits = {{ commits | tojson }};
+    
         const dates = [];
         const commitCounts = {};
-
+    
         commits.forEach(commit => {
             const date = commit.commit.author.date.split('T')[0];  // Извлекаем только дату
             if (!commitCounts[date]) {
@@ -24,13 +25,13 @@
             }
             commitCounts[date]++;
         });
-
+    
         for (const date in commitCounts) {
             dates.push(date);
         }
-
+    
         const commitCountsArray = Object.values(commitCounts);
-
+    
         const ctx = document.getElementById('commitChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',

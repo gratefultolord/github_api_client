@@ -56,7 +56,6 @@ def search_commits():
     Поиск коммитов по фразе.
     """
     full_repo_name = request.form.get("repo_name")
-    print(f"Получено имя репозитория: {full_repo_name}")  # Добавьте логирование
     
     query = request.form.get("commit_message", "")
     
@@ -76,21 +75,21 @@ def search_commits():
         commits=commits)
 
 
-@app.route('/commit-stats')
+@app.route('/commit-stats', methods=['GET', 'POST'])
 def commit_stats():
-    repo_owner = request.args.get('repo_owner')
-    repo_name = request.args.get('repo_name')
-    
-    # Формируем URL для запроса к GitHub API
-    url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits'
-    response = requests.get(url)
+    repo_owner = request.form.get('repo_owner')
+    repo_name = request.form.get('repo_name')
 
+    response = requests.get(f"https://api.github.com/repos/{repo_owner}/{repo_name}/commits")
+    
     if response.status_code == 200:
         commits = response.json()
+        print(f"Полученные коммиты: {commits}")  # Логируем данные
     else:
         commits = []
+        print(f"Ошибка получения коммитов: {response.status_code} - {response.json()}")  # Логируем ошибку
 
-    return render_template('commit_stats.html', repo_owner=repo_owner, repo_name=repo_name, commits=commits)
+    return render_template('commit_stats.html', commits=commits, repo_name=repo_name)
 
 
 if __name__ == "__main__":
