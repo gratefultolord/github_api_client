@@ -1,19 +1,56 @@
+<!-- commit_stats.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Статистика коммитов</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/static/js/chart-config.js" defer></script>
 </head>
 <body>
-    <h1>Статистика коммитов</h1>
-    <canvas id="commitChart" width="800" height="400"
-        data-labels='{{ stats.dates | tojson }}'
-        data-data='{{ stats.frequencies | tojson }}'></canvas>
-    <a href="/">Назад</a>
+    <h1>График зависимости коммитов от времени для репозитория {{ repo_name }}</h1>
+
+    <canvas id="commitChart" width="400" height="200"></canvas>
+
+    <script>
+        const commits = {{ commits | tojson }};
+        const dates = [];
+        const commitCounts = {};
+
+        commits.forEach(commit => {
+            const date = commit.commit.author.date.split('T')[0];  // Извлекаем только дату
+            if (!commitCounts[date]) {
+                commitCounts[date] = 0;
+            }
+            commitCounts[date]++;
+        });
+
+        for (const date in commitCounts) {
+            dates.push(date);
+        }
+
+        const commitCountsArray = Object.values(commitCounts);
+
+        const ctx = document.getElementById('commitChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Коммиты по датам',
+                    data: commitCountsArray,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
-
 

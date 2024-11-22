@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
     <title>Результаты поиска коммитов</title>
 </head>
 <body>
     <h1>Результаты поиска коммитов</h1>
-    {% if commits.error %}
-        <p>Ошибка: {{ commits.error }}</p>
-    {% elif commits %}
+    {% if commits %}
         <ul>
             {% for commit in commits %}
                 <li>
-                    <p><strong>SHA:</strong> {{ commit.sha }}</p>
-                    <p><strong>Автор:</strong> {{ commit.author }}</p>
-                    <p><strong>Email:</strong> {{ commit.email }}</p>
-                    <p><strong>Дата:</strong> {{ commit.date }}</p>
-                    <p><strong>Комментарий:</strong> {{ commit.message }}</p>
-                    <p><strong>Ссылка:</strong> <a href="{{ commit.html_url }}" target="_blank">{{ commit.html_url }}</a></p>
+                    <strong>SHA:</strong> {{ commit.sha }}<br>
+                    <strong>Сообщение:</strong> {{ commit.message }}<br>
+                    <strong>Автор:</strong> {{ commit.author_email }}<br>
+                    <strong>Дата:</strong> {{ commit.date }}<br>
+                    <a href="{{ commit.url }}" target="_blank">Просмотр коммита</a>
                 </li>
-                <hr>
             {% endfor %}
         </ul>
     {% else %}
         <p>Коммиты не найдены.</p>
     {% endif %}
+    <a href="{{ url_for('commit_stats', repo_name=repo_name, query=query) }}">Посмотреть график зависимости коммитов от времени</a>
     <a href="/">Назад</a>
 </body>
 </html>

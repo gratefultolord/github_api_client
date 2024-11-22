@@ -1,10 +1,8 @@
 import requests
 import os
 from flask.cli import load_dotenv
-from collections import defaultdict
+from urllib.parse import urlparse
 
-# Загрузка переменных из .env
-load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_API_URL = "https://api.github.com"
 
@@ -13,43 +11,63 @@ HEADERS = {
     "Accept": "application/vnd.github+json"
 }
 
+def extract_repo_info(repo_url):
+    """
+    Извлечение username и repository из URL репозитория GitHub.
+    :param repo_url: string, URL репозитория GitHub
+    :return: tuple (username, repo_name)
+    """
+    parsed_url = urlparse(repo_url)
+    
+    # Проверяем, что URL корректен и содержит ожидаемую структуру
+    if parsed_url.netloc == "github.com":
+        path_parts = parsed_url.path.strip("/").split("/")
+        if len(path_parts) == 2:
+            username = path_parts[0]
+            repo_name = path_parts[1]
+            return username, repo_name
+    return None, None  # Если URL не соответствует ожидаемой структуре
+
 
 def get_repo_info(repo_name):
     """
-    Получение информации о репозитории.
+    Получение информации о репозитории на GitHub.
     :param repo_name: string, формат username/repository
-    :return: dict с названием, URL и описанием
+    :return: dict с названием, URL, описанием репозитория
     """
-    url = f"{GITHUB_API_URL}/repos/{repo_name}"
-    response = requests.get(url, headers=HEADERS)
-
+    url = f"https://api.github.com/repos/{repo_name}"
+    response = requests.get(url)
+    
     if response.status_code != 200:
-        raise ValueError(
-            f"Не удалось получить информацию о репозитории: {response.json()}")
-
-    repo_data = response.json()
+        raise ValueError(f"Не удалось получить информацию о репозитории {repo_name}")
+    
+    repo_info = response.json()
+    
     return {
-        "name": repo_data.get("name"),
-        "html_url": repo_data.get("html_url"),
-        "description": repo_data.get("description", "Нет описания")
+        "name": repo_info.get("name"),
+        "html_url": repo_info.get("html_url"),
+        "description": repo_info.get("description")
     }
 
 
-def search_commits(repo_name, query):
+def search_commits(repo_url, query):
     """
     Поиск коммитов по фразе.
-    :param repo_name: string, формат username/repository
+    :param repo_url: string, URL репозитория GitHub
     :param query: string, фраза для поиска
     :return: list с данными о коммитах
     """
-    url = f"{GITHUB_API_URL}/search/commits"
-    params = {
-        "q": f"{query}+repo:{repo_name}"
-    }
-    headers = HEADERS.copy()
-    headers["Accept"] = "application/vnd.github.cloak-preview"
+    # Разбираем URL репозитория на username и repo_name
+    username, repo_name = extract_repo_info(repo_url)
+    if not username or not repo_name:
+        raise ValueError(f"Неверный URL репозитория: {repo_url}")
 
-    response = requests.get(url, headers=headers, params=params)
+    # Создаем запрос для поиска
+    url = f"https://api.github.com/search/commits?q={query}+repo:{username}/{repo_name}"
+    
+    # Выполняем запрос к GitHub API
+    response = requests.get(url, headers=HEADERS)
+    print(url)
 
     if response.status_code != 200:
         raise ValueError(f"Ошибка поиска коммитов: {response.json()}")
@@ -64,38 +82,45 @@ def search_commits(repo_name, query):
             "date": commit_data["author"]["date"],
             "message": commit_data["message"]
         })
+        print("item: ", item)
 
     return commits
 
 
 def get_commit_frequency(repo_name, start_date, end_date):
     """
-    Подсчет частоты коммитов за заданный период.
+    Получение статистики коммитов за указанный период.
     :param repo_name: string, формат username/repository
     :param start_date: string, начальная дата (YYYY-MM-DD)
     :param end_date: string, конечная дата (YYYY-MM-DD)
-    :return: dict {"dates": [даты], "frequencies": [кол-во коммитов]}
+    :return: dict с датами и частотой коммитов
     """
-    url = f"{GITHUB_API_URL}/repos/{repo_name}/commits"
+    url = f"https://api.github.com/repos/{repo_name}/commits"
     params = {
         "since": f"{start_date}T00:00:00Z",
         "until": f"{end_date}T23:59:59Z"
     }
-
-    response = requests.get(url, headers=HEADERS, params=params)
-
+    response = requests.get(url, params=params)
+    
     if response.status_code != 200:
-        raise ValueError(f"Ошибка получения коммитов: {response.json()}")
-
-    commit_data = response.json()
-    frequency = defaultdict(int)
-
-    for commit in commit_data:
-        date = commit["commit"]["author"]["date"][:10]
-        frequency[date] += 1
-
-    sorted_dates = sorted(frequency.keys())
+        raise ValueError(f"Не удалось получить коммиты для репозитория {repo_name}")
+    
+    commits = response.json()
+    
+    # Группируем коммиты по датам
+    commit_dates = {}
+    for commit in commits:
+        commit_date = commit["commit"]["author"]["date"][:10]  # берем только дату (YYYY-MM-DD)
+        if commit_date not in commit_dates:
+            commit_dates[commit_date] = 0
+        commit_dates[commit_date] += 1
+    
+    # Подготавливаем данные для возвращения
+    dates = sorted(commit_dates.keys())
+    frequencies = [commit_dates[date] for date in dates]
+    
     return {
-        "dates": sorted_dates,
-        "frequencies": [frequency[date] for date in sorted_dates]
+        "dates": dates,
+        "frequencies": frequencies
     }
+

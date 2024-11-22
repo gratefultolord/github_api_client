@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask.cli import load_dotenv
+import requests
 
 from client.github_client import GitHubClient
 import os
@@ -9,7 +10,7 @@ from pathlib import Path
 load_dotenv()
 
 # Инициализация Flask приложения
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 os.chdir(Path(__file__).parent)
 DEFAULT_REPO = os.getenv("DEFAULT_REPO", "octocat/Hello-World")
 
@@ -30,20 +31,22 @@ def index():
     return render_template("index.html")  # Страница с формой для ввода репозитория
 
 
-@app.route("/repo-info", methods=["POST"])
+@app.route("/repo-info", methods=["GET", "POST"])
 def repo_info():
     """
     Получение информации о репозитории.
     """
-    repo_name = request.form.get("repo_name")  # Получаем репозиторий из параметра URL
+    repo_name = request.form.get("repo_name")  # Получаем repo_name из URL (параметры запроса)
+    print(f"repo_name: {repo_name}")
     if not repo_name:
-        return jsonify({"error":"Необходимо указать названия репозитория"})  # Если не указан репозиторий, показываем ошибку
+        return jsonify({"error":"Необходимо указать название репозитория"}), 400
 
     client = GitHubClient(repo_name)
     data = client.get_repository_info()
 
     if data.get("error"):
-        return jsonify({"error":data["error"]}), 400
+        return jsonify({"error": data["error"]}), 400
+    
     return render_template("repo_info.html", repo_name=repo_name, data=data)
 
 
@@ -52,10 +55,20 @@ def search_commits():
     """
     Поиск коммитов по фразе.
     """
-    repo_name = request.form.get("repo_name", DEFAULT_REPO)
-    query = request.form.get("query", "")
-    client = GitHubClient(repo_name)
+    full_repo_name = request.form.get("repo_name")
+    print(f"Получено имя репозитория: {full_repo_name}")  # Добавьте логирование
+    
+    query = request.form.get("commit_message", "")
+    
+    # Проверка на корректность
+    if "/" not in full_repo_name:
+        return render_template("repo_info.html", data={"error": "Неверный формат репозитория"})
+    
+    user_name, repo_name = full_repo_name.split("/", 1)
+    
+    client = GitHubClient(full_repo_name)  # Передаем полный репозиторий
     commits = client.search_repository_commits(query)
+    
     return render_template(
         "search_commits.html",
         repo_name=repo_name,
@@ -63,28 +76,21 @@ def search_commits():
         commits=commits)
 
 
-@app.route("/commit-stats", methods=["POST"])
+@app.route('/commit-stats')
 def commit_stats():
-    """
-    Построение статистики коммитов за интервал времени.
-    """
-    repo_name = request.form.get("repo_name", DEFAULT_REPO)
-    start_date = request.form.get("start_date", "2024-01-01")
-    end_date = request.form.get("end_date", "2024-12-31")
-    client = GitHubClient(repo_name)
-    stats = client.get_commit_statistics(start_date, end_date)
+    repo_owner = request.args.get('repo_owner')
+    repo_name = request.args.get('repo_name')
+    
+    # Формируем URL для запроса к GitHub API
+    url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits'
+    response = requests.get(url)
 
-    if "error" in stats:
-        return jsonify({"error": stats["error"]}), 400
+    if response.status_code == 200:
+        commits = response.json()
+    else:
+        commits = []
 
-    # Передаем данные для визуализации на графике
-    return render_template(
-        "commit_stats.html",
-        repo_name=repo_name,
-        start_date=start_date,
-        end_date=end_date,
-        stats=stats
-    )
+    return render_template('commit_stats.html', repo_owner=repo_owner, repo_name=repo_name, commits=commits)
 
 
 if __name__ == "__main__":

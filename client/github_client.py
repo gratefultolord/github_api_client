@@ -1,4 +1,5 @@
-from .utils import get_repo_info, search_commits, get_commit_frequency
+from .utils import get_repo_info, get_commit_frequency, search_commits
+import requests
 
 
 class GitHubClient:

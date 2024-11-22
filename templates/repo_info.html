@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
     <title>Информация о репозитории</title>
 </head>
 <body>
@@ -17,10 +18,12 @@
 
     <h2>Поиск по коммитам</h2>
     <form action="/search-commits" method="POST">
-        <label for="commit_message">Введите сообщение коммита:</label>
-        <input type="text" id="commit_message" name="commit_message" placeholder="Поиск коммитов...">
-        <button type="submit">Поиск</button>
+        <input type="hidden" name="repo_name" value="{{ data.html_url }}">
+        <label for="commit_message">Сообщение коммита:</label>
+        <input type="text" name="commit_message" id="commit_message" required>
+        <button type="submit">Искать</button>
     </form>
+    
 
     {% if commits %}
         <h3>Результаты поиска:</h3>
@@ -28,12 +31,32 @@
             {% for commit in commits %}
                 <li>
                     <strong>{{ commit.committer }}</strong>: 
-                    <a href="{{ commit.html_url }}" target="_blank">{{ commit.commit_message }}</a>
+                    <a href="{{ commit.url }}" target="_blank">{{ commit.commit_message }}</a>
                 </li>
             {% endfor %}
         </ul>
     {% endif %}
 
+    <form id="repo-form" method="POST" action="/commit-stats">
+        <label for="repo_owner">Имя пользователя:</label>
+        <input type="text" id="repo_owner" name="repo_owner" required><br>
+
+        <label for="repo_name">Название репозитория:</label>
+        <input type="text" id="repo_name" name="repo_name" required><br>
+
+        <button type="submit">Получить статистику</button>
+    </form>
+
+    <script>
+        document.getElementById('repo-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const repoOwner = document.getElementById('repo_owner').value;
+            const repoName = document.getElementById('repo_name').value;
+
+            window.location.href = `/commit-stats?repo_owner=${repoOwner}&repo_name=${repoName}`;
+        });
+    </script>
     <a href="/">Назад</a>
 </body>
 </html>
