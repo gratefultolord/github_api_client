@@ -1,0 +1,39 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Копируем docker-compose.yml на сервер
+    - name: Copy Docker Compose file to VM
+      uses: appleboy/scp-action@v0.1.6
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        source: ./docker-compose.yml
+        target: ~/deploy/
+
+    # Деплой на сервер
+    - name: Deploy on VM
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        envs:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        script: |
+          cd ~/deploy/
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d

@@ -7,24 +7,28 @@
     <title>Результаты поиска коммитов</title>
 </head>
 <body>
-    <h1>Результаты поиска коммитов</h1>
-    {% if commits %}
-        <ul>
-            {% for commit in commits %}
-                <li>
-                    <strong>SHA:</strong> {{ commit.sha }}<br>
-                    <strong>Сообщение:</strong> {{ commit.message }}<br>
-                    <strong>Автор:</strong> {{ commit.author_email }}<br>
-                    <strong>Дата:</strong> {{ commit.date }}<br>
-                    <a href="{{ commit.url }}" target="_blank">Просмотр коммита</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Коммиты не найдены.</p>
-    {% endif %}
-    <a href="{{ url_for('commit_stats', repo_name=repo_name, query=query) }}">Посмотреть график зависимости коммитов от времени</a>
-    <a href="/">Назад</a>
+    <div class="container">
+        <header class="header">
+            <h1>Результаты поиска коммитов</h1>
+        </header>
+        {% if commits %}
+            <ul class="commit-list">
+                {% for commit in commits %}
+                    <li class="commit-item">
+                        <div class="commit-header">
+                            <strong>SHA:</strong> {{ commit.sha }}<br>
+                            <strong>Сообщение:</strong> {{ commit.message }}<br>
+                            <strong>Автор:</strong> {{ commit.author_email }}<br>
+                            <strong>Дата:</strong> {{ commit.date }}<br>
+                        </div>
+                        <a href="{{ commit.html_url }}" class="commit-link">Просмотр коммита</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-commits">Коммиты не найдены.</p>
+        {% endif %}
+        <a href="/" class="back-link">Назад</a>
+    </div>
 </body>
 </html>
-

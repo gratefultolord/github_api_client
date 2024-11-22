@@ -5,50 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/style.css">
     <title>Информация о репозитории</title>
-    <style>
-        .hidden-form {
-            display: none; /* Полностью скрывает элемент */
-        }
-    </style>
 </head>
 <body>
-    <h1>Информация о репозитории</h1>
-    {% if data.error %}
-        <p>Ошибка: {{ data.error }}</p>
+  <div class="container">
+    <header class="header">
+        <h1>Информация о репозитории</h1>
+    </header>
+
+    <main class="main-content">
+      {% if data.error %}
+        <section class="error-section">
+          <p class="error-message">Ошибка: {{ data.error }}</p>
+        </section>
     {% else %}
+      <section class="repo-info-section">
         <p><strong>Название:</strong> {{ data.name }}</p>
         <p><strong>URL:</strong> <a href="{{ data.html_url }}" target="_blank">{{ data.html_url }}</a></p>
         <p><strong>Описание:</strong> {{ data.description }}</p>
+      </section>
     {% endif %}
 
-    <h2>Поиск по коммитам</h2>
-    <form action="/search-commits" method="POST">
+    <section class="search-section">
+      <h2>Поиск по коммитам</h2>
+      <form action="/search-commits" method="POST">
         <input type="hidden" name="repo_name" value="{{ data.html_url }}">
         <label for="commit_message">Сообщение коммита:</label>
-        <input type="text" name="commit_message" id="commit_message" required>
+        <input type="text" name="commit_message" id="commit_message" placeholder="Введите текст для поиска" required>
         <button type="submit">Искать</button>
-    </form>
+      </form>
+    </section>
 
     {% if commits %}
+      <section class="commits-section">
         <h3>Результаты поиска:</h3>
         <ul>
             {% for commit in commits %}
                 <li>
-                    <strong>{{ commit.committer }}</strong>: 
+                    <strong>{{ commit.committer }}</strong>:
                     <a href="{{ commit.url }}" target="_blank">{{ commit.commit_message }}</a>
                 </li>
             {% endfor %}
         </ul>
+      </section>
     {% endif %}
 
-    <h2>Получить статистику по коммитам</h2>
-    <div class="hidden-form">
-        <form id="repo-form" method="POST" action="/commit-stats">
-            <input type="text" id="repo_owner" name="repo_owner" required>
-            <input type="text" id="repo_name" name="repo_name" required>
-        </form>
+    <section class="stats-section">
+                <h2>Получить статистику по коммитам</h2>
+                <form id="repo-form" method="POST" action="/commit-stats" class="hidden-form">
+                    <input type="hidden" id="repo_owner" name="repo_owner">
+                    <input type="hidden" id="repo_name" name="repo_name">
+                </form>
+                <button id="get-stats-btn" class="btn">Получить статистику</button>
+            </section>
+
+            <a href="/" class="back-link">Назад</a>
+        </main>
     </div>
-    <button id="get-stats-btn">Получить статистику</button>
 
     <script>
         // Извлекаем имя владельца и название репозитория из переданных данных в шаблоне
@@ -67,7 +79,5 @@
             document.getElementById('repo-form').submit(); // Отправка формы
         });
     </script>
-
-    <a href="/">Назад</a>
 </body>
 </html>

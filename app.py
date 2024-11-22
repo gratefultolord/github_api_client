@@ -50,7 +50,7 @@ def repo_info():
     return render_template("repo_info.html", repo_name=repo_name, data=data)
 
 
-@app.route("/search-commits", methods=["POST"])
+@app.route("/search-commits", methods=['GET', 'POST'])
 def search_commits():
     """
     Поиск коммитов по фразе.
@@ -58,6 +58,7 @@ def search_commits():
     full_repo_name = request.form.get("repo_name")
     
     query = request.form.get("commit_message", "")
+    print(f"full_repo_name: {full_repo_name}")
     
     # Проверка на корректность
     if "/" not in full_repo_name:
@@ -79,6 +80,8 @@ def search_commits():
 def commit_stats():
     repo_owner = request.form.get('repo_owner')
     repo_name = request.form.get('repo_name')
+    print(f"repo_owner: {repo_owner}")
+    print(f"repo_name: {repo_name}")
 
     response = requests.get(f"https://api.github.com/repos/{repo_owner}/{repo_name}/commits")
     
@@ -87,7 +90,7 @@ def commit_stats():
         print(f"Полученные коммиты: {commits}")  # Логируем данные
     else:
         commits = []
-        print(f"Ошибка получения коммитов: {response.status_code} - {response.json()}")  # Логируем ошибку
+        print(f"Ошибка получения коммитов: {response.status_code}")
 
     return render_template('commit_stats.html', commits=commits, repo_name=repo_name)
 

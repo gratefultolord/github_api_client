@@ -7,27 +7,37 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>GitHub API Клиент</h1>
-    <form action="/repo-info" method="POST">
-        <label for="repo_name">Введите имя репозитория (формат: username/repo):</label>
-        <input type="text" name="repo_name">
-        <button type="submit">Получить информацию</button>
-    </form>
-    <hr>
-    <h2>Другие функции</h2>
-    <form action="/search-commits" method="POST">
-        <label for="query">Поиск коммитов по фразе:</label>
-        <input type="text" id="query" name="query" placeholder="Введите фразу для поиска">
-        <input type="hidden" name="repo_name" value="{{ default_repo }}">
-        <button type="submit">Искать</button>
-    </form>
-    <form action="/commit-stats" method="POST">
-        <label for="start_date">Дата начала:</label>
-        <input type="date" id="start_date" name="start_date">
-        <label for="end_date">Дата окончания:</label>
-        <input type="date" id="end_date" name="end_date">
-        <input type="hidden" name="repo_name" value="{{ default_repo }}">
-        <button type="submit">Показать статистику</button>
-    </form>
+    <div class="container">
+        <header class="header">
+            <h1>GitHub API Клиент</h1>
+        </header>
+
+        <main class="main-content">
+            <!-- Форма ввода имени репозитория -->
+            <section class="form-section">
+                <h2>Получить информацию о репозитории</h2>
+                <form action="/repo-info" method="POST" class="form">
+                    <label for="repo_name">Имя репозитория (формат: username/repo):</label>
+                    <input type="text" id="repo_name" name="repo_name" required>
+                    <button type="submit">Получить информацию</button>
+                </form>
+            </section>
+
+            <!-- Поиск коммитов по фразе -->
+            <section class="form-section">
+                <h2>Поиск коммитов по фразе</h2>
+                <form action="/search-commits" method="POST" class="form">
+                    <label for="query">Введите фразу для поиска:</label>
+                    <input type="text" id="query" name="query" placeholder="Введите фразу">
+                    <input type="hidden" name="repo_name" value="{{ default_repo }}">
+                    <button type="submit">Искать</button>
+                </form>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 GitHub API Клиент</p>
+        </footer>
+    </div>
 </body>
 </html>

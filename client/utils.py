@@ -59,6 +59,7 @@ def search_commits(repo_url, query):
     """
     # Разбираем URL репозитория на username и repo_name
     username, repo_name = extract_repo_info(repo_url)
+    print("print username, repo_name: ", username, repo_name)
     if not username or not repo_name:
         raise ValueError(f"Неверный URL репозитория: {repo_url}")
 
