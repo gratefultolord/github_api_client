@@ -30,8 +30,6 @@ jobs:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_KEY }}
-        envs:
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
         script: |
           cd ~/deploy/
           docker-compose down
