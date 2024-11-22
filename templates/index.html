@@ -1,0 +1,33 @@
+<<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub API Клиент</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>GitHub API Клиент</h1>
+    <form action="/repo-info" method="POST">
+        <label for="repo_name">Введите имя репозитория (формат: username/repo):</label>
+        <input type="text" name="repo_name" value="default_repo_value">
+        <button type="submit">Получить информацию</button>
+    </form>
+    <hr>
+    <h2>Другие функции</h2>
+    <form action="/search-commits" method="POST">
+        <label for="query">Поиск коммитов по фразе:</label>
+        <input type="text" id="query" name="query" placeholder="Введите фразу для поиска">
+        <input type="hidden" name="repo_name" value="{{ default_repo }}">
+        <button type="submit">Искать</button>
+    </form>
+    <form action="/commit-stats" method="POST">
+        <label for="start_date">Дата начала:</label>
+        <input type="date" id="start_date" name="start_date">
+        <label for="end_date">Дата окончания:</label>
+        <input type="date" id="end_date" name="end_date">
+        <input type="hidden" name="repo_name" value="{{ default_repo }}">
+        <button type="submit">Показать статистику</button>
+    </form>
+</body>
+</html>

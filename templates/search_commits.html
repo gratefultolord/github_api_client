@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты поиска коммитов</title>
+</head>
+<body>
+    <h1>Результаты поиска коммитов</h1>
+    {% if commits.error %}
+        <p>Ошибка: {{ commits.error }}</p>
+    {% elif commits %}
+        <ul>
+            {% for commit in commits %}
+                <li>
+                    <p><strong>SHA:</strong> {{ commit.sha }}</p>
+                    <p><strong>Автор:</strong> {{ commit.author }}</p>
+                    <p><strong>Email:</strong> {{ commit.email }}</p>
+                    <p><strong>Дата:</strong> {{ commit.date }}</p>
+                    <p><strong>Комментарий:</strong> {{ commit.message }}</p>
+                    <p><strong>Ссылка:</strong> <a href="{{ commit.html_url }}" target="_blank">{{ commit.html_url }}</a></p>
+                </li>
+                <hr>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Коммиты не найдены.</p>
+    {% endif %}
+    <a href="/">Назад</a>
+</body>
+</html>
+
