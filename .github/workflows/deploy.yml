@@ -23,7 +23,7 @@ jobs:
         source: ./docker-compose.yml
         target: ~/deploy/
 
-    # Деплой на сервер
+    # Выполняем команды на сервере
     - name: Deploy on VM
       uses: appleboy/ssh-action@v0.1.5
       with:
